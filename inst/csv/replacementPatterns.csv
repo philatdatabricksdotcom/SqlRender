@@ -885,3 +885,130 @@ hive,"ISNUMERIC(@a)","case when cast(@a as double) is not null then 1 else 0 end
 hive,as \"@a\",as @a
 hive,"HASHBYTES('MD5',@a)","hash(@a)"
 hive,"CONVERT(VARBINARY, @a, 1)","@a"
+spark,CREATE CLUSTERED INDEX @index_name ON @table (@variable);,-- hive does not support indexes
+spark,CREATE INDEX @index_name ON @table (@variable);,-- hive does not support indexes
+spark,CREATE INDEX @index_name ON @table (@variable) WHERE @c;,-- hive does not support indexes
+spark,"CHARINDEX(@a,@b)","INSTR(@b,@a)"
+spark,COUNT_BIG(@a),COUNT(@a)
+spark,"LEFT(@str,@chars)","SUBSTR(@str,1,@chars)"
+spark,LEN(@a),LENGTH(@a)
+spark,LOG(@expression),LN(@expression)
+spark,NEWID(),"reflect('java.util.UUID','randomUUID')"
+spark,"RIGHT(@str,@chars)","SUBSTR(@str,-@chars)"
+spark,"ROUND(@a,@b)","ROUND(CAST(@a AS DOUBLE),@b)"
+spark,SQUARE(@a),((@a)*(@a))
+spark,STDEV(@a),STDDEV_POP(@a)
+spark,VAR(@a),VARIANCE(@a)
+spark,"DATEADD(d,@days,CAST(@date AS DATE))","DATE_ADD(@date, @days)"
+spark,"DATEADD(dd,@days,CAST(@date AS DATE))","DATE_ADD(@date, @days)"
+spark,"DATEADD(day,@days,CAST(@date AS DATE))","DATE_ADD(@date, @days)"
+spark,"DATEADD(month,@months,CAST(@date AS DATE))","CAST(ADD_MONTHS(@date, @months) AS TIMESTAMP)"
+spark,"DATEADD(mm,@months,CAST(@date AS DATE))","CAST(ADD_MONTHS(@date, @months) AS TIMESTAMP)"
+spark,"DATEADD(m,@months,CAST(@date AS DATE))","CAST(ADD_MONTHS(@date, @months) AS TIMESTAMP)"
+spark,"DATEADD(year,@years,CAST(@date AS DATE))","CAST(ADD_MONTHS(@date, 12 * @years) AS TIMESTAMP)"
+spark,"DATEADD(yyyy,@years,CAST(@date AS DATE))","CAST(ADD_MONTHS(@date, 12 * @years) AS TIMESTAMP)"
+spark,"DATEADD(yy,@years,CAST(@date AS DATE))","CAST(ADD_MONTHS(@date, 12 * @years) AS TIMESTAMP)"
+spark,"DATEADD(d,@days,@date)","DATE_ADD(CAST(@date AS TIMESTAMP), @days)"
+spark,"DATEADD(dd,@days,@date)","DATE_ADD(CAST(@date AS TIMESTAMP), @days)"
+spark,"DATEADD(day,@days,@date)","DATE_ADD(CAST(@date AS TIMESTAMP), @days)"
+spark,"DATEADD(month,@months,@date)","CAST(ADD_MONTHS(CAST(@date AS TIMESTAMP), @months) AS TIMESTAMP)"
+spark,"DATEADD(mm,@months,@date)","CAST(ADD_MONTHS(CAST(@date AS TIMESTAMP), @months) AS TIMESTAMP)"
+spark,"DATEADD(m,@months,@date)","CAST(ADD_MONTHS(CAST(@date AS TIMESTAMP), @months) AS TIMESTAMP)"
+spark,"DATEADD(year,@years,@date)","CAST(ADD_MONTHS(CAST(@date AS TIMESTAMP), 12 * @years) AS TIMESTAMP)"
+spark,"DATEADD(yyyy,@years,@date)","CAST(ADD_MONTHS(CAST(@date AS TIMESTAMP), 12 * @years) AS TIMESTAMP)"
+spark,"DATEADD(yy,@years,@date)","CAST(ADD_MONTHS(CAST(@date AS TIMESTAMP), 12 * @years) AS TIMESTAMP)"
+spark,"DATEDIFF(d,@start, @end)","day(CAST(@end AS TIMESTAMP) - CAST(@start AS TIMESTAMP))"
+spark,"DATEDIFF(dd,@start, @end)","day(CAST(@end AS TIMESTAMP) - CAST(@start AS TIMESTAMP))"
+spark,"DATEDIFF(day,@start, @end)","day(CAST(@end AS TIMESTAMP) - CAST(@start AS TIMESTAMP))"
+spark,"DATEDIFF(year,@start, @end)",(YEAR(CAST(@end AS DATE)) - YEAR(CAST(@start AS DATE)))
+spark,"DATEDIFF(yyyy,@start, @end)",(YEAR(CAST(@end AS DATE)) - YEAR(CAST(@start AS DATE)))
+spark,"DATEDIFF(yy,@start, @end)",(YEAR(CAST(@end AS DATE)) - YEAR(CAST(@start AS DATE)))
+spark,"DATEDIFF(month,@start, @end)","CAST(MONTHS_BETWEEN(CAST(@end AS DATE), CAST(@start AS DATE)) AS INT)"
+spark,"DATEDIFF(mm,@start, @end)","CAST(MONTHS_BETWEEN(CAST(@end AS DATE), CAST(@start AS DATE)) AS INT)"
+spark,"DATEDIFF(m,@start, @end)","CAST(MONTHS_BETWEEN(CAST(@end AS DATE), CAST(@start AS DATE)) AS INT)"
+spark,"DATEFROMPARTS(@year,@month,@day)","CAST(CONCAT(CAST(@year AS STRING),'-',CAST(@month AS STRING),'-',CAST(@day AS STRING)) AS TIMESTAMP)"
+spark,"eomonth(@date)","CAST(last_day(@date) AS TIMESTAMP)"
+spark,GETDATE(),unix_timestamp()
+spark,year(unix_timestamp()),year(from_unixtime(unix_timestamp()))
+spark,"IF OBJECT_ID('@table', 'U') IS NULL CREATE TABLE @table (@definition);",CREATE TABLE IF NOT EXISTS @table (@definition);
+spark,"IF OBJECT_ID('@table', 'U') IS NOT NULL DROP TABLE @table;",DROP TABLE IF EXISTS @table;
+spark,"HINT PARTITION(@p) @before CREATE TABLE IF NOT EXISTS @table(@pid,@fields) @after;",partitioned table \n@before CREATE TABLE IF NOT EXISTS @table (@fields) @after \n PARTITIONED BY(@p);
+spark,"HINT BUCKET(@bucket,@size) @before CREATE TABLE IF NOT EXISTS @table(@fields) @after;",table with bucket \n@before CREATE TABLE IF NOT EXISTS @table (@fields) @after \n CLUSTERED by (@bucket) into @size BUCKETS;
+spark,"HINT PARTITION(@p) @before CREATE TABLE @table(@pid,@fields) @after;",partitioned table \n@before CREATE TABLE @table (@fields) @after \n PARTITIONED BY(@p);
+spark,"HINT BUCKET(@bucket,@size) @before CREATE TABLE @table(@fields) @after;",table with bucket \n@before CREATE TABLE @table (@fields) @after \n CLUSTERED by (@bucket) into @size BUCKETS;
+spark,(SELECT @a UNION SELECT @b) ORDER BY,SELECT * FROM\n(SELECT @a\nUNION\nSELECT @b)\nAS t1 ORDER BY
+spark,"WITH @a AS (@b), @c AS (@d), @e AS (@f) SELECT @i INTO #@j FROM","DROP TABLE IF EXISTS @a; DROP TABLE IF EXISTS @c; DROP TABLE IF EXISTS @e;\n\nCREATE TEMPORARY TABLE @a AS @b;\nCREATE TEMPORARY TABLE @c AS @d;\nCREATE TEMPORARY TABLE @e AS @f;\nCREATE TEMPORARY TABLE @j AS SELECT @i FROM"
+spark,"WITH @a AS (@b), @c AS (@d), @e AS (@f), @g AS (@h) SELECT @i INTO #@j FROM","DROP TABLE IF EXISTS @a; DROP TABLE IF EXISTS @c; DROP TABLE IF EXISTS @e; DROP TABLE IF EXISTS @g;\n\nCREATE TEMPORARY TABLE @a AS @b;\nCREATE TEMPORARY TABLE @c AS @d;\nCREATE TEMPORARY TABLE @e AS @f;\nCREATE TEMPORARY TABLE @g AS @h;\nCREATE TEMPORARY TABLE @j AS SELECT @i FROM"
+spark,"WITH @a AS (@b), @c AS (@d), @e AS (@f), @g AS (@h), @i AS (@j) SELECT @k INTO #@l FROM","DROP TABLE IF EXISTS @a; DROP TABLE IF EXISTS @c; DROP TABLE IF EXISTS @e; DROP TABLE IF EXISTS @g; DROP TABLE IF EXISTS @i;\n\nCREATE TEMPORARY TABLE @a AS @b;\nCREATE TEMPORARY TABLE @c AS @d;\nCREATE TEMPORARY TABLE @e AS @f;\nCREATE TEMPORARY TABLE @g AS @h;\nCREATE TEMPORARY TABLE @i AS @j;\nCREATE TEMPORARY TABLE @l AS SELECT @k FROM"
+spark,WITH @a AS @b SELECT @c INTO #@d FROM,DROP TABLE IF EXISTS @a;\n\nCREATE TEMPORARY TABLE @a AS @b;\nCREATE TEMPORARY TABLE @d AS SELECT @c FROM
+spark,SELECT @a INTO #@b FROM @c;,CREATE TEMPORARY TABLE IF NOT EXISTS @b AS\nSELECT\n@a\nFROM\n@c;
+spark,SELECT @a INTO #@b;,CREATE TEMPORARY TABLE IF NOT EXISTS @b AS\nSELECT\n@a;
+spark,CREATE TABLE #@table (@definition),CREATE TEMPORARY TABLE IF NOT EXISTS @table (@definition)
+spark,"WITH @a AS (@b), @c AS (@d), @e AS (@f) SELECT @i INTO @j FROM","DROP TABLE IF EXISTS @a; DROP TABLE IF EXISTS @c; DROP TABLE IF EXISTS @e;\n\nCREATE TEMPORARY TABLE @a AS @b;\nCREATE TEMPORARY TABLE @c AS @d;\nCREATE TEMPORARY TABLE @e AS @f;\nSELECT @i INTO @j FROM"
+spark,"WITH @a AS (@b), @c AS (@d), @e AS (@f), @g AS (@h) SELECT @i INTO @j FROM","DROP TABLE IF EXISTS @a; DROP TABLE IF EXISTS @c; DROP TABLE IF EXISTS @e; DROP TABLE IF EXISTS @g;\n\nCREATE TEMPORARY TABLE @a AS @b;\nCREATE TEMPORARY TABLE @c AS @d;\nCREATE TEMPORARY TABLE @e AS @f;\nCREATE TEMPORARY TABLE @g AS @h;\nSELECT @i INTO @j FROM"
+spark,"WITH @a AS (@b), @c AS (@d), @e AS (@f), @g AS (@h), @i AS (@j) SELECT @k INTO @l FROM","DROP TABLE IF EXISTS @a; DROP TABLE IF EXISTS @c; DROP TABLE IF EXISTS @e; DROP TABLE IF EXISTS @g; DROP TABLE IF EXISTS @i;\n\nCREATE TEMPORARY TABLE @a AS @b;\nCREATE TEMPORARY TABLE @c AS @d;\nCREATE TEMPORARY TABLE @e AS @f;\nCREATE TEMPORARY TABLE @g AS @h;\nCREATE TEMPORARY TABLE @i AS @j;\nSELECT @k INTO @l FROM"
+spark,WITH @a AS @b SELECT @c INTO @d FROM,DROP TABLE IF EXISTS @a;\n\nCREATE TEMPORARY TABLE @a AS @b;\nSELECT @c INTO @d FROM
+spark,"CREATE TEMPORARY TABLE @a AS (@b), @c (@d) as (@e)\n;","DROP TABLE IF EXISTS @a; DROP TABLE IF EXISTS @c; CREATE TEMPORARY TABLE @a AS (@b)\n;\nCREATE TEMPORARY TABLE @c AS (@e)\n;"
+spark,"CREATE TEMPORARY TABLE @a AS (@b), @c as (@d)\n;","DROP TABLE IF EXISTS @a; DROP TABLE IF EXISTS @c; CREATE TEMPORARY TABLE @a AS (@b)\n;\nCREATE TEMPORARY TABLE @c AS (@d)\n;"
+spark,DROP TABLE IF EXISTS @a (@b),DROP TABLE IF EXISTS @a
+spark,SELECT @a INTO @b FROM @c;,CREATE TABLE IF NOT EXISTS @b AS\nSELECT\n@a\nFROM\n@c;
+spark,SELECT @a INTO @b;,CREATE TABLE IF NOT EXISTS @b AS\nSELECT\n@a;
+spark,SELECT DISTINCT @a FROM @b INTERSECT SELECT DISTINCT @a FROM @c;,SELECT t1.@a FROM (SELECT DISTINCT @a FROM @b UNION ALL SELECT DISTINCT @a FROM @c) AS t1 GROUP BY @a HAVING COUNT(*) >= 2;
+spark,(SELECT DISTINCT @a FROM @b INTERSECT SELECT DISTINCT @a FROM @c),(SELECT t1.@a FROM (SELECT DISTINCT @a FROM @b UNION ALL SELECT DISTINCT @a FROM @c) AS t1 GROUP BY @a HAVING COUNT(*) >= 2)
+spark,.dbo.,.
+spark,##,<hash><hash>
+spark,#,
+spark,#.@table (,@table (
+spark,#.@table;,@table;
+spark,#.@table),@table)
+spark,<hash><hash>,##
+spark,SELECT TOP @([0-9]+)rows @a;,SELECT @a LIMIT @rows;
+spark,(SELECT TOP @([0-9]+)rows @a),(SELECT @a LIMIT @rows)
+spark,DATE,TIMESTAMP
+spark,DATETIME,TIMESTAMP
+spark,DATETIME2,TIMESTAMP
+spark,BIGINT NOT NULL,BIGINT
+spark,BOOLEAN NOT NULL,BOOLEAN
+spark,CHAR NOT NULL,CHAR
+spark,DECIMAL NOT NULL,DECIMAL
+spark,DOUBLE NOT NULL,DOUBLE
+spark,FLOAT NOT NULL,FLOAT
+spark,INT NOT NULL,INT
+spark,REAL NOT NULL,FLOAT
+spark,SMALLINT NOT NULL,SMALLINT
+spark,STRING NOT NULL,VARCHAR
+spark,TIMESTAMP NOT NULL,TIMESTAMP
+spark,TINYINT NOT NULL,TINYINT
+spark,VARCHAR(@a) NOT NULL,VARCHAR(@a)
+spark,BIGINT NULL,BIGINT
+spark,BOOLEAN NULL,BOOLEAN
+spark,CHAR NULL,CHAR
+spark,DECIMAL NULL,DECIMAL
+spark,DOUBLE NULL,DOUBLE
+spark,FLOAT NULL,FLOAT
+spark,INT NULL,INT
+spark,REAL NULL,FLOAT
+spark,SMALLINT NULL,SMALLINT
+spark,STRING NULL,VARCHAR
+spark,TIMESTAMP NULL,TIMESTAMP
+spark,TINYINT NULL,TINYINT
+spark,VARCHAR(@a) NULL,VARCHAR(@a)
+spark,"CHAR,","CHAR(1),"
+spark,"CHAR\n+","CHAR(1)\n"
+spark,"CHAR)","CHAR(1))"
+spark,"CONSTRAINT @a DEFAULT unix_timestamp()",""
+spark,"DEFAULT unix_timestamp()",""
+spark,stats,_stats
+spark,UPDATE STATISTICS @a;,-- hive does not support COMPUTE STATS
+spark,CAST(@a AS VARCHAR),CAST(@a AS VARCHAR(1000))
+spark,"ISNULL(@a,@b)","COALESCE(@a,@b)"
+spark,(@a)  AS select,(@a) AS select
+spark,"TABLE @cte_name (@a) AS (","TABLE @cte_name AS ("
+spark,"TABLE @cte_name (@a) AS select","TABLE @cte_name AS select"
+spark,"WHEN .@digits * ","WHEN 0.@digits * "
+spark,">= .@digits * ",">= 0.@digits * "
+spark, _stats, stats
+spark,"ISNUMERIC(@a)","case when cast(@a as double) is not null then 1 else 0 end"
+spark,as \"@a\",as @a
+spark,"HASHBYTES('MD5',@a)","hash(@a)"
+spark,"CONVERT(VARBINARY, @a, 1)","@a"
